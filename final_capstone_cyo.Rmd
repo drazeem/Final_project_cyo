@@ -1,0 +1,1052 @@
+---
+title: "final_capstone_cyo"
+author: "Muhammad Azeem"
+date: "1/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(knitr)
+```
+
+
+# FINAL PROJECT - CYO [HarvardX Data Science Capstone (HarvardX: PH125.9x)]
+
+## INTRODUCTION
+
+> This document is comprised of the analysis report which was prepared as a part of HarvardX Data Science Capstone (HarvardX: PH125.9x)-CYO. The field chosen for this project is Human Resource Management. As the field of Artificial Intelligence (AI) is sneaking into many areas of human lives , e.g., engineering, product designing, education, space exploration, geo sciences, health sciences, etc., the case of Business studies is not very different. All functional areas of business management are quite vulnerable to such technological intrusions. Human resource management is one such field which will be adapted to AI. Many current challenges in manpower planning, job analysis and staffing, recruitment and selection, training and development, performance management, employee’s relationship, good work environment, etc. One of the major issues that HR manger is facing is the problem of employees attrition. There are many terms used for this concept. For example; employees’ turnover, termination, resignation and withdrawal, churn etc. The term attrition is covering all such concepts whether voluntary or involuntary. The study of the attrition problem can help mangers to understand who is vulnerable to such situations, and whether they can predict the potential cases for the leaving the organization. Such information will also guide to the workforce planning, staffing, and recruitment processes. In this study the attrition issue is examined. The data for the study was borrowed from the kaggle.com public data repository. The reference of the data page is given at the end of this document. The title of the data is "IBM-HR Analytics “IBM HR Analytics Employee Attrition & Performance". The goal in this study is to predict attrition of the  employees. According to the information given on the page, the data set was created by the IBM data scientists". " Its main purpose is to demonstrate the Watson analytics tool for employee attrition". The data is considered quite appropriate for the current project as it has enough cases and multiple features to develop a classification model.
+
+## GOAL
+
+>The goal is to predict the employee’s attrition based on the known features.
+
+## METHODOLOGY
+
+> According to the goal of the study, the project is in the scope of the supervised learning model. The four ML algorithms are employed to predict the attrition from the given data. They are:
+
+> 1: Decision Tree
+> 2: Random Forest
+> 3: Logistic Regression
+
+> Out of given 35 variables the 12 were removed to bring the data into a manageable rationale. The final data set has 1470 cases and 13 variables. The analysis included following sections:
+
+> 1)  Installing the required packages/libraries
+> 2)  Calling IBM-HR dataset 
+> 3)  Preparing the data for analysis
+> 4)  Examine the structure of the final data set.
+> 5)  Replacing  Yes and No in the label variable by 1 and 0 respectively.
+> 6)  Examine for the missing values
+> 7)  Univariate Analysis
+> 8)  Bivariate Analysis
+> 9)  Modeling
+> 10) Conclusion
+> 11) limitations
+> 12) Future work
+> 13) References/Bibliography
+
+*********************************************
+### Installing the required packages/libraries
+
+
+```{r}
+if(!require(tidyverse)) install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+if(!require(caret)) install.packages("caret", repos = "http://cran.us.r-project.org")
+if(!require(Amelia)) install.packages("Amelia", repos = "http://cran.us.r-project.org")
+if(!require(psych)) install.packages("psych", repos = "http://cran.us.r-project.org")
+if(!require(corrplot)) install.packages("corrplot", repos = "http://cran.us.r-project.org")
+if(!require(GoodmanKruskal)) install.packages("GoodmanKruskal", repos = "http://cran.us.r-project.org")
+if(!require(rpart)) install.packages("rpart", repos = "http://cran.us.r-project.org")
+if(!require(rpart.plot)) install.packages("rpart.plot", repos = "http://cran.us.r-project.org")
+if(!require(party)) install.packages("party", repos = "http://cran.us.r-project.org")
+if(!require(randomForest)) install.packages("randomForest", repos = "http://cran.us.r-project.org")
+if(!require(ROCR)) install.packages("ROCR", repos = "http://cran.us.r-project.org")
+if(!require(pscl)) install.packages("pscl", repos = "http://cran.us.r-project.org")
+if(!require(rcompanion)) install.packages("rcompanion", repos = "http://cran.us.r-project.org")
+
+```
+*************************************************
+### Calling IBM-HR dataset 
+```{r}
+df<- read.csv("WA_Fn-UseC_-HR-Employee-Attrition.csv")
+```
+
+### Preperaing the data for analysis
+
+### Examining the dimensions and structure of the data set 
+
+```{r}
+dim(df)
+```
+
+> There are 1470 cases and 35 variables.
+
+```{r}
+str(df)
+```
+
+> Data frame of 1470 observations and 35 variables.
+
+### Removing the irrelavant  and those with constant values.
+
+```{r}
+df<- df[-c(1,3,7,8, 9, 10, 11,12,14,15, 16, 17,18, 19, 20, 21, 24, 25,27,28, 32,33)]
+str(df)
+```
+
+### list of columns names.
+
+```{r}
+names(df)
+```
+
+### Renaming the columns to the shorter form.
+
+> Renamung "Age"  as "age", "Gender" as "gen", "MaritalStatus" as "marital",  "Education" as "edu",  "MonthlyIncome" as "income",  "PercentSalaryHike" as "salHike" , "PerformanceRating" as "perRate",  "StockOptionLevel" as "stock",  "WorkLifeBalance" as "workLifeBal" , "YearsAtCompany" as "expComp" , "YearsInCurrentRole" as "expCurrRole" , "JobSatisfaction" as "jobSat" , and "Attrition" as "attr". 
+
+```{r}
+colnames(df) <- c("age","gen","marital","edu", "income","salHike", "perRate", "stock", "workLifeBal","expComp","expCurrRole","jobSat","attr")
+```
+
+### Reading names of the variables in the data set
+
+```{r}
+names(df)
+```
+
+### Changing the order of columns
+
+```{r}
+df <- df[,c(1,2,3,4,10,11,5,6,8,9,7,12,13)]
+```
+
+****************************************************
+
+### Examine the structure of the data.
+
+```{r}
+str(df) 
+```
+
+> There are 13 variables of 1470 cases in df
+> The above output shows that some variables are categorical but read as integers. For example, edu is categorial variable, but appearining as integer. Therfore, variables should be fixed for the proper data type.
+
+### Converting the integer variables "edu","stock","workLifeBal","perRate", and "jobSat" into factor variable.
+
+```{r}
+table(df$edu)
+df$edu <-  as.factor(df$edu)
+```
+
+```{r}
+table(df$stock)
+df$stock <-  as.factor(df$stock)
+```
+
+```{r}
+table(df$workLifeBal)
+df$workLifeBal <-  as.factor(df$workLifeBal)
+```
+
+```{r}
+table(df$perRate)
+df$perRate <-  as.factor(df$perRate)
+```
+
+```{r}
+table(df$jobSat)
+df$jobSat <-  as.factor(df$jobSat)
+```
+
+*****************************************************
+
+### Replacing  Yes and No in the label (attr) variable by 1 and 0 respectively.
+
+```{r}
+class(df$attr)
+df$attr <-  as.character(df$attr)
+df$attr <-ifelse(df$attr=="Yes","1","0")
+table(df$attr)
+df$attr <-  as.factor(df$attr)
+str(df)
+```
+
+### Examine for the missing values
+
+```{r}
+missmap(df,main = "Missing Values Vs Observed")
+```
+
+> The above diagram shows that there is no missing data set (no gray spot found).
+
+### Univariate Analysis
+
+```{r}
+describe(df) 
+```
+
+> We can aso use summary() function, but it does not provide standard deviation value.
+
+***************************************************
+### Visual display of the variables
+
+### Age
+
+```{r}
+ggplot(df, aes(x=age)) + ggtitle("Age of Employee") + xlab("age") +
+  geom_histogram(bins = 20, aes(y=..density..), color = "red", fill = "red") + geom_density(alpha=.2, fill="#FF6666") +     ylab("Frequency")
+```
+
+### Gender
+
+```{r}
+ggplot(df, aes(x=gen)) + ggtitle("Gender") + xlab("gen") +
+  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5, color = "red", fill = "red") + ylab("Percentage") + coord_flip() + theme_minimal()
+```
+
+### Marital Status
+
+```{r}
+ggplot(df, aes(x=marital)) + ggtitle("Marital Status") + xlab("marital") +
+  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5, color = "red", fill = "red") + ylab("Percentage") + coord_flip() + theme_minimal()
+```
+
+### Education Level
+
+```{r}
+ggplot(df, aes(x=edu)) + ggtitle("Education Level") + xlab("edu") +
+  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5,color = "red", fill = "red") + ylab("Percentage") + coord_flip() + theme_minimal()
+```
+
+### Stock Options
+
+```{r}
+ggplot(df, aes(x=stock)) + ggtitle("Stock Option") + xlab("stock") +
+  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5, color = "red", fill = "red") + ylab("Percentage") + coord_flip() + theme_minimal()
+```
+
+### Work Life Balance
+
+```{r}
+ggplot(df, aes(x=workLifeBal)) + ggtitle("Work Life Balance") + xlab("workLifeBal") +
+  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5, color = "red", fill = "red") + ylab("Percentage") + coord_flip() + theme_minimal()
+```
+
+### Performance Rate
+
+```{r}
+ggplot(df, aes(x=perRate)) + ggtitle("Performance Rate") + xlab("perRate") +
+  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5, color = "red", fill = "red") + ylab("Frequency") + coord_flip() + theme_minimal()
+```
+
+# Job Satisfaction
+
+```{r}
+ggplot(df, aes(x=jobSat)) + ggtitle("Job Satisfaction") + xlab("jobSat") +
+  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5, color = "red", fill = "red") + ylab("Percentage") + coord_flip() + theme_minimal()
+```
+
+# Experience in Company
+
+```{r}
+ggplot(df, aes(x=expComp)) + ggtitle("Experience in Company") + xlab("expComp") +
+  geom_histogram(bins = 20, aes(y=..density..), color = "red", fill = "red") + geom_density(alpha=.2, fill="#FF6666") +     ylab("Frequency")
+```
+
+# Experience in Current Role
+
+```{r}
+ggplot(df, aes(x=expCurrRole)) + ggtitle("Experience in Current Role") + xlab("expCurrRole") +
+  geom_histogram(bins = 10, aes(y=..density..), color = "red", fill = "red") + geom_density(alpha=.2, fill="#FF6666") +     ylab("Frequency")
+```
+
+# Monthly Income
+
+```{r}
+ggplot(df, aes(x=income)) + ggtitle("Monthly Income") + xlab("income") +
+  geom_histogram(bins = 30, aes(y=..density..), color = "red", fill = "red") + geom_density(alpha=.2, fill="#FF6666") +     ylab("Frequency")
+```
+
+# Salary Hike
+
+```{r}
+ggplot(df, aes(x=salHike)) + ggtitle("Salary Hike") + xlab("salHike") +
+  geom_histogram(bins = 15, aes(y=..density..), color = "red", fill = "red") + geom_density(alpha=.2, fill="#FF6666") +     ylab("Frequency")
+```
+
+# Attrition
+
+```{r}
+ggplot(df, aes(x=attr)) + ggtitle("Attrition") + xlab("attr") +
+  geom_bar(aes(y = 100*(..count..)/sum(..count..)), width = 0.5, color = "red", fill = "red") + ylab("Percentage") + coord_flip() + theme_minimal()
+```
+
+*****************************************************
+
+### Examining the distribution of the categorical variables in the data for the factor levels representing employees with and without attrition (attr). This may lead to exclude variables that only have few (below 5) samples in any category.
+
+```{r}
+table(df$attr)
+xtabs(~ attr + gen, data=df)
+xtabs(~ attr + marital, data=df)
+xtabs(~ attr + edu, data=df)
+xtabs(~ attr + stock, data=df) 
+xtabs(~ attr + workLifeBal, data=df)
+xtabs(~ attr + perRate, data=df)
+xtabs(~ attr + jobSat, data=df)
+```
+
+### The above output shows that all categorical variables have no category with frequency below 5.
+
+### Bivariate Analysiss
+
+### Examining the Correlation (continuous scale variables)
+
+```{r}
+df_corr <- cor(df[c(1,5,6,7,8)])
+corrplot(df_corr, method="number", diag=FALSE, type="lower",  title = "Correlation among continuous scale variables")
+```
+
+> There is evidence of moderate correlation between (age and income), and (age and expComp), (expComp and expCurrRole), (income and expComp), and (income and expCurrRole)
+
+##############################################################################
+### Examining the association (or independence) among categorical variables.
+
+### Q: Are Gender(gen) and Marital Status (marital) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$gen, df$marital)
+chisq.test(df$gen, df$marital)
+```
+
+> p-value is 0.169, which is above 0.05, thus Ho is accepted and that gen and marital are independent.
+
+### Q: Are Gender(gen) and Education Level (edu) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$gen, df$edu)
+chisq.test(df$gen, df$edu)
+```
+
+> p-value is 0.54, which is above 0.05, thus Ho is accepted and that gen and edu are independent.
+
+### Q: Are Gender(gen) and Stock Option (stock) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$gen, df$stock)
+chisq.test(df$gen, df$stock)
+```
+
+> p-value is 0.848, which is above 0.05, thus Ho is accepted and that gen and stock are independent.
+
+############################
+### Q: Are Gender(gen) and Job Role (jobRole) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$gen, df$workLifeBal)
+chisq.test(df$gen, df$workLifeBal)
+```
+
+> p-value is 0.8004, which is above 0.05, thus Ho is accepted and that gen and workLifeBal are not independent.
+
+### Q: Are Gender(gen) and Overtime (overtime) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$gen, df$perRate)
+chisq.test(df$gen, df$perRate)
+```
+
+> p-value is 0.6473, which is above 0.05, thus Ho is accepted and that gen and perRate are independent.
+
+### Q: Are Gender(gen) and Business Travel (travel) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$gen, df$jobSat)
+chisq.test(df$gen, df$jobSat)
+```
+
+> p-value is 0.4667, which is above 0.05, thus Ho is accepted and that gen and jobSat are independent.
+
+###########################
+### Q: Are Marital(martial) and Education (edu) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$marital, df$edu)
+chisq.test(df$marital, df$edu)
+```
+
+> p-value is 0.6172, which is above 0.05, thus Ho is accepted and that marital and edu are independent.
+
+###############################
+### Q: Are Marital(martial) and Stock Option (stock) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$marital, df$stock)
+chisq.test(df$marital, df$stock)
+```
+
+> p-value is 2.2e-16, which is below 0.05, thus Ho is rejected and that marital and stock are not independent.
+
+###############################
+### Q: Are Marital(martial) and Work Life Balance (workLifeBal) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$marital, df$workLifeBal)
+chisq.test(df$marital, df$workLifeBal)
+```
+
+> p-value is 0.5377, which is above 0.05, thus Ho is accepted and that marital and workLifeBal are independent.
+
+##################################
+### Q: Are Marital(martial) and Performance Rate (perRate) independent?
+
+# Chi-Square Test of Independence
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$marital, df$perRate)
+chisq.test(df$marital, df$perRate)
+```
+
+> p-value is 0.9067, which is above 0.05, thus Ho is accepted and that marital and perRate are independent.
+
+##################################
+### Q: Are Marital(martial) and Job Satisfaction (jobSat) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$marital, df$jobSat)
+chisq.test(df$marital, df$jobSat)
+```
+
+> p-value is 0.8285, which is above 0.05, thus Ho is accepted and that marital and jobSat are independent.
+
+##################################
+### Q: Are Education(edu) and Stock Option(stock)independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$edu, df$stock)
+```
+
+> Since there are two categories having frequency below 5, therefore chi square approximation may not be appropriate
+
+### Q: Are Education(edu) and Work Life Balance(workLifeBal)independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$edu, df$workLifeBal)
+```
+
+> Since one of the category has frequency below 5, therefore chi square approximation may not be appropriate
+
+#########################################
+### Q: Are Education(edu) and Performance Rate (perRate)independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$edu, df$perRate)
+chisq.test(df$edu, df$perRate)
+```
+
+> p-value is 0.645 , which is above 0.05, thus Ho is accepted and that edu and perRate are independent.
+
+#########################################
+### Q: Are Education(edu) and Job Satisfaction (jobSat) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$edu, df$jobSat)
+chisq.test(df$edu, df$jobSat)
+```
+
+> p-value is 0.3669 , which is above 0.05, thus Ho is accepted and that edu and jobSat are independent.
+
+#########################################
+### Q: Are Stock Option (stock) and Work Life Balance (workLifeBal) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$stock, df$workLifeBal)
+```
+
+> Since one of the category has frequency below 5, therefore we chi square approximation may not be appropriate
+
+#########################################
+### Q: Are Stock Option (stock) and Performance Rate (perRate) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$stock, df$perRate)
+chisq.test(df$stock, df$perRate)
+```
+
+> p-value is 0.586 , which is above 0.05, thus Ho is accepted and that edu and attr are independent.
+
+#########################################
+### Q: Are Stock Option (stock) and Job Satisfaction (jobSat) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$stock, df$jobSat)
+chisq.test(df$stock, df$jobSat)
+```
+
+> p-value is 0.973 , which is above 0.05, thus Ho is accepted and that edu and attr are independent.
+
+#########################################
+### Q: Are Work Life Balance (workLifeBal) and Performance Rate (perRate) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$workLifeBal, df$perRate)
+chisq.test(df$workLifeBal, df$perRate)
+```
+
+> p-value is 0.814 , which is above 0.05, thus Ho is accepted and that workLifeBal and perRate are independent.
+
+#########################################
+### Q: Are Work Life Balance (workLifeBal) and Job Satisfaction (jobSat) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$workLifeBal, df$jobSat)
+chisq.test(df$workLifeBal, df$jobSat)
+```
+
+> p-value is 0.681 , which is above 0.05, thus Ho is accepted and that workLifeBal and jobSat are independent.
+
+#########################################
+### Q: Are Performance Rate (perRate) and Job Satisfaction (jobSat) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+table(df$perRate, df$jobSat)
+chisq.test(df$perRate, df$jobSat)
+```
+
+> p-value is 0.259 , which is above 0.05, thus Ho is accepted and that perRate and jobSat are independent.
+
+#########################################
+### The association can also be studied by the Googman Kruskal values. 
+
+```{r}
+fac_1<- c("gen","marital","edu","stock","workLifeBal","perRate","jobSat","attr")
+df1<- subset(df, select = fac_1)
+GKmatrix1<- GKtauDataframe(df1)
+plot(GKmatrix1, corrColors = "blue")
+```
+
+> In the 8×8 array plot, the diagonal entries are number of categories in the vaiable. The off-diagonal elements give  the Goodman-Kruskal τ values represent the association measure τ(x,y) from the variable x (rows) to the variable y (columns). The close to zero means no association between two variables.
+
+###########################################################################
+### Examining the association ( or independence) between Attrition (attr) and other categorical factors.
+
+### Q: Are Gender(gen) and Attrition (attr) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+chisq.test(df$gen, df$attr)
+```
+
+> p-value is 0.2906, which is above 0.05, thus Ho is accepted and that gen and attr are independent.
+
+### Q: Which gender has more tendency towards Attiration?
+
+```{r}
+table(df$gen, df$attr)
+prop.table(table(df$gen, df$attr))
+```
+
+> The output table shows that the proportion of the male employees is larger than the female in favour of the attrition. 
+
+###############################
+### Marital Statuss (marit) and Attrition (attr) 
+
+### Q: Are Marital Status (martial) and Attrition (attr) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+chisq.test(df$marital, df$attr)
+```
+
+> p-value is 9.456e-11, which is below  0.05, thus Ho is rejected and that marital and attr are not independent.
+
+### Q: Whether marital status affects more the decision towards Attiration?
+
+```{r}
+table(df$marital, df$attr)
+prop.table(table(df$marital, df$attr))
+```
+
+> The output shows that in non attrition ase, the married employes have larger proportion. In case of attrition, the sigles have more trend towards the attrition.
+
+### Q: Whether gender influences the decision on the bases of the marital status towards Attiration?
+
+```{r}
+table(df$gen, df$marital, df$attr)
+prop.table(table(df$gen, df$marital, df$attr))
+```
+
+> There are three levels of marital status level:  1 'Divorced' 2 'Married' 3 'Single'. The output shows that the male employees have greater tendency towards Attiration and non-attrition in all ctegories of marital status.
+
+#########################################################################################
+### Education(edu) and Attrition (attr)
+
+### Q: Are Education(edu) and Attrition (attr) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+chisq.test(df$edu, df$attr)
+```
+
+> p-value is 0.545 , which is above 0.05, thus Ho is accepted and that edu and attr are independent.
+
+### Q: Which qualification level has greater tendency towards attrition?
+
+```{r}
+table(df$edu, df$attr)
+prop.table(table(df$edu, df$attr))
+```
+
+> There are five levels of education level:  1 'Below College' 2 'College' 3 'Bachelor' 4 'Master' 5 'Doctor'
+# Bachelor degree holders are having greater tendency towards both the Attiration and non-attrition, followed by the master degree holders.
+#########################################
+
+### Q: Are Stock Option (stock) and Attrition (attr) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+chisq.test(df$stock, df$attr)
+```
+
+> p-value is 4.379e-13 , which is below 0.05, thus Ho is not accepted and that stock and attr are not independent.
+
+### Q: Does Attiration depend on the stock options to the employees?
+
+```{r}
+table(df$stock, df$attr)
+prop.table(table(df$stock, df$attr))
+```
+
+> There are four levels of stock options:  0 'No stock Option' 1 'Few Stock Options' 2 'normal Stock Options' 4 'Good stock Options'. With low or no stock options, the attrition rate is high.
+
+#########################################
+### Q: Are Work Life Balance (workLifeBal) and Attrition (attr) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+chisq.test(df$workLifeBal, df$attr)
+```
+
+> p-value is 0.000 , which is below 0.05, thus Ho is not accepted and that workLifeBal and attr are not independent.
+
+### Q: Does Attiration has any relevance to the work life balance situation of the employees?
+
+```{r}
+table(df$workLifeBal, df$attr)
+prop.table(table(df$workLifeBal, df$attr))
+```
+
+> There are four levels of WorkLifeBalance:  1 'Bad' 2 'Good' 3 'Better' 4 'Best'. With high score in workLifeBal , the case is strong for no attrition, and with low workLifeBal, the attrition is evident
+
+#########################################
+### Q: Are Performance Rate (perRate) and Attrition (attr) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+chisq.test(df$perRate, df$attr)
+```
+
+> p-value is 0.99 , which is above 0.05, thus Ho is accepted and that perRate and attrition are independent.
+
+
+### Q: Does performance rate influence the Attiration?
+
+```{r}
+table(df$perRate, df$attr)
+prop.table(table(df$perRate, df$attr))
+```
+
+> There are four levels of Performance Rating: 1 'Low' 2 'Good' 3 'Excellent' 4 'Outstanding'With high performance rating the case is weak for attrition, and with weak performance rating the attrition is quite evident.
+
+### Q: Are Job Satisfaction (jobSat) and Attrition (attr) independent?
+
+> Chi-Square Test of Independence
+
+> Ho: They are independent
+> H1: They are not independent
+
+> Applying chi-square test
+
+```{r}
+chisq.test(df$jobSat, df$attr)
+```
+
+> p-value is 0.000 , which is below 0.05, thus Ho is  not accepted and that attr and jobSat are not independent.
+
+### Q: Does job satisfaction influence the Attiration?
+
+```{r}
+table(df$jobSat, df$attr)
+prop.table(table(df$jobSat, df$attr))
+```
+
+> There are four levels of JobSatisfaction: 1 'Low' 2 'Medium' 3 'High' 4 'Very High'# With high job satisfaction the case is weak for attrition, and with poor job satisfaction the attrition is quite evident.
+ 
+*********************************************************************
+ 
+## Modeling (Classification)
+
+> First We split the data into train and test
+
+```{r}
+set.seed(1)
+temp <- sample(2, nrow(df), replace=T, prob = c(0.8,0.2))
+train <- df[temp==1,]
+test <- df[temp==2,]
+str(train)  
+str(test)
+```
+
+## Decision Tree
+
+```{r}
+m1 <- rpart(attr ~ .,
+            data=train,
+            method="class",
+            parms=list(split="information"),
+            control=rpart.control(usesurrogate=0, 
+                                  maxsurrogate=0))
+
+m1
+```
+
+```{r}
+rpart.plot(m1, type = 3)
+```
+
+
+### Model performance
+
+```{r}
+pred_m1 <- predict(m1, test, type = 'class')
+```
+
+
+### Obtaining the Confusion matrix 
+
+```{r}
+table(pred_m1,test$attr)
+```
+
+
+# Examine Accuracy
+
+```{r}
+ mean(pred_m1 == test$attr)
+```
+
+
+## Random Forest 
+
+```{r}
+m2 <- randomForest(attr ~ ., data = train, importance = TRUE)
+m2
+```
+
+> The output of the above code produces the confusion matrix and error rate. At teh default 500 trees, the out of bag error 15.14% which shows that model (m2_1) has about 85% predicitve accuracy. 
+
+### Model performance
+
+```{r}
+pred_m2 <- predict(m2, test, type = "class")
+```
+
+### Obtaining the Confusion matrix 
+
+```{r}
+table(pred_m2,test$attr)
+```
+
+### Examining Accuracy
+
+```{r}
+mean(pred_m2 == test$attr)
+```
+
+### Obtaining the key variables
+
+```{r}
+importance(m2) 
+```
+
+```{r}
+varImpPlot(m2)
+```
+       
+
+### Logistic Regressopn
+
+```{r}
+m4 <- glm(attr ~ ., family = binomial(link="logit"), data = train)
+summary(m4)
+```
+
+### Model performance
+
+### goodness of fit (pseudo R-Square)
+
+```{r}
+nagelkerke(m4)
+```
+
+> The output of above function is McFadden = 0.1066, Cox and Snell (ML) = 0.0895, and Nege lkerke (Vragg and uhler) = 0.153. The liklihood test ratio (chi square) is 110.84 at p-value 0.000
+
+> We an also directly get above mentioed p-value by using following function
+
+```{r}
+p_value <- with(m4,pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = F))
+p_value
+```
+
+### The result is 0.000 (less than 5% thus goodness of fit is significant)
+
+### We can also use following code to get above goodness of fit statistics 
+
+```{r}
+pR2(m4)
+```
+
+### Examine the  Accuracy
+
+```{r}
+fitted.results <- predict(m4,newdata=test,type='response')
+fitted.results <- ifelse(fitted.results > 0.5,1,0)
+
+misClasificError <- mean(fitted.results != test$attr)
+print(paste('Accuracy',1-misClasificError))
+```
+
+### Accuracy is 0.85
+
+### Plotting the ROC curve
+
+### ROC plot and the AUC (area under the curve) are merformance measures for the binary classifier.
+
+### The ROC is a curve generated by plotting the true positive rate (TPR) against the false positive rate (FPR) at various threshold settings while the AUC is the area under the ROC curve. As a rule of thumb, a model with good predictive ability should have an AUC closer to 1 (1 is ideal) than to 0.5.
+
+```{r}
+p <- predict(m4, newdata=test, type="response")
+pr <- prediction(p, test$attr)
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf)
+```
+
+```{r}
+auc <- performance(pr, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+```
+
+> The AUC is 0.79 which is reasonable.
+
+******************************************************
+## Conclusion
+> The three classification ML-algorithms employed in this project were Decision Tree, Random Forest, and the Logistic Regression. The accuracy was almost similar. The predictability can be improved by including more features into the model and removing those which are not contributing to the variance in the outcome variable. The study has proved that the application of ML-algorithm can be an effective way to improve the HR operations. Employees attrition is a major concern for many organizations. Due to the rapid growth in technology and globalization the labor mobility has increased tremendously. In that case, the ML technique can be an important skill for the HR managers.
+
+#####################################################
+## limitations
+> The HR data in the large size organizations is quite a lot and machine memory, and internet speed to download or link are the challenges. Many companies are also reluctant to share real HR data as it poses many challenges to them.
+
+#######################################################
+## Future work
+
+> The project finding has shown that the ML-algorithms are an effective tool to improve the HR operations especially with reference to the Attrition issues. By including more variables, the further variance can be explained in the outcome variables and higher level of accuracy can be obtained. For example the variables like , education field, job level, department, job role, monthly, hourly and daily rates, number of companies an employee has worked previously, total Work experience, distance from home, business travel frequency, overtime options, training times in the previous years, promotion frequency, time spent with the current manager, satisfaction rates like environment satisfaction, job involvement, relationship satisfaction etc. Moreover, the predictive models can also be studied on the continuous scale outcome variable.
+
+#######################################################
+## References/Bibliograpgy
+
+> Following resources were consulted 
+
+> http://www.sthda.com/english/wiki/visualize-correlation-matrix-using-correlogram
+> https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html
+> https://www.kaggle.com/rohitkumar06/let-s-reduce-attrition-logistic-reg-acc-88
+> https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset
+> Material provided in the HarvardX: PH125 courses especially in the Machine Learning course (HarvardX: PH125.8x).
+
+###################################################################################
+
